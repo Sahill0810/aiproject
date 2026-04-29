@@ -9,7 +9,7 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 from transformers import BlipProcessor, BlipForConditionalGeneration
-from googletrans import Translator
+# from googletrans import Translator
 
 # -----------------------------
 # INIT APP
@@ -42,7 +42,7 @@ model = BlipForConditionalGeneration.from_pretrained(
 print("BLIP loaded!")
 
 # Lightweight translator
-translator = Translator()
+# translator = Translator()
 
 # -----------------------------
 # CAPTION FUNCTION (FAST)
@@ -65,8 +65,7 @@ def generate_caption(image):
 # -----------------------------
 # TRANSLATION (LIGHTWEIGHT)
 # -----------------------------
-def translate_caption(caption, lang_code):
-    if lang_code == "en":
+def translate_caption(caption, lang:
         return caption
 
     try:
