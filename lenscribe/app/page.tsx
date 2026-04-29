@@ -79,8 +79,7 @@ export default function Home() {
 
       <button
         onClick={upload}
-        className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200"
-      >
+        className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200">
         Generate Caption
       </button>
 
