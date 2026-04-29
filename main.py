@@ -65,7 +65,7 @@ def generate_caption(image):
 # -----------------------------
 # TRANSLATION (LIGHTWEIGHT)
 # -----------------------------
-def translate_caption(caption, lang:
+def translate_caption(caption, lang):
         return caption
 
     try:
