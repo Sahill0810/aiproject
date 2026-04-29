@@ -15,7 +15,7 @@ export default function Home() {
     const formData = new FormData();
     formData.append("file", file);
     const res = await axios.post(
-      `http://127.0.0.1:8000/predict?lang=${selectedLang}`,
+      "https://lenscribe-api.onrender.com/predict?lang=" + selectedLang,
       formData
     );
 

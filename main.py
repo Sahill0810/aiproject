@@ -3,9 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import torch
+import os
+
+# Disable tokenizer warning
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 from transformers import BlipProcessor, BlipForConditionalGeneration
-from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
+from googletrans import Translator
 
 # -----------------------------
 # INIT APP
@@ -23,60 +27,53 @@ app.add_middleware(
 device = "cpu"
 
 # -----------------------------
-# LOAD MODELS (ONLY ONCE)
+# LOAD LIGHT MODELS
 # -----------------------------
-print("Loading BLIP model...")
-processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+print("Loading lightweight BLIP model...")
+
+processor = BlipProcessor.from_pretrained(
+    "Salesforce/blip-image-captioning-small"
+)
+
 model = BlipForConditionalGeneration.from_pretrained(
-    "Salesforce/blip-image-captioning-base"
+    "Salesforce/blip-image-captioning-small"
 ).to(device)
 
-print("Loading Translation model...")
-tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
-translator = M2M100ForConditionalGeneration.from_pretrained(
-    "facebook/m2m100_418M"
-).to(device)
+print("BLIP loaded!")
 
-print("All models loaded successfully!")
+# Lightweight translator
+translator = Translator()
 
 # -----------------------------
-# CAPTION FUNCTION (IMPROVED)
+# CAPTION FUNCTION (FAST)
 # -----------------------------
 def generate_caption(image):
+    # Resize image for speed
+    image = image.resize((384, 384))
+
     inputs = processor(image, return_tensors="pt").to(device)
 
     output = model.generate(
         **inputs,
-        max_length=30,
-        num_beams=5,
-        repetition_penalty=1.5,
-        no_repeat_ngram_size=2,
-        early_stopping=True
+        max_length=20,
+        num_beams=1   # FAST
     )
 
     caption = processor.decode(output[0], skip_special_tokens=True)
     return caption
 
 # -----------------------------
-# TRANSLATION FUNCTION
+# TRANSLATION (LIGHTWEIGHT)
 # -----------------------------
 def translate_caption(caption, lang_code):
     if lang_code == "en":
         return caption
 
-    tokenizer.src_lang = "en"
-    encoded = tokenizer(caption, return_tensors="pt").to(device)
-
-    generated_tokens = translator.generate(
-        **encoded,
-        forced_bos_token_id=tokenizer.get_lang_id(lang_code)
-    )
-
-    translated = tokenizer.batch_decode(
-        generated_tokens, skip_special_tokens=True
-    )[0]
-
-    return translated
+    try:
+        translated = translator.translate(caption, dest=lang_code)
+        return translated.text
+    except:
+        return caption  # fallback if API fails
 
 # -----------------------------
 # API ENDPOINT
@@ -87,7 +84,6 @@ def predict(file: UploadFile = File(...), lang: str = "en"):
         print("Request received")
 
         image = Image.open(io.BytesIO(file.file.read())).convert("RGB")
-        print("Image loaded")
 
         caption_en = generate_caption(image)
         print("Caption:", caption_en)
