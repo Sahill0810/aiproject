@@ -67,12 +67,11 @@ def generate_caption(image):
 # -----------------------------
 def translate_caption(caption, lang):
         return caption
-
-    try:
-        translated = translator.translate(caption, dest=lang_code)
-        return translated.text
-    except:
-        return caption  # fallback if API fails
+    # try:
+        # translated = translator.translate(caption, dest=lang)
+        # return translated.text
+    # except:
+        # return caption  # fallback if API fails
 
 # -----------------------------
 # API ENDPOINT
@@ -85,9 +84,6 @@ def predict(file: UploadFile = File(...), lang: str = "en"):
         image = Image.open(io.BytesIO(file.file.read())).convert("RGB")
 
         caption_en = generate_caption(image)
-        print("Caption:", caption_en)
-
-        caption_translated = translate_caption(caption_en, lang)
 
         return {
             "caption_en": caption_en,
