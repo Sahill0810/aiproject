@@ -1,96 +1,104 @@
 "use client";
+
 import { useState } from "react";
-import axios from "axios";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [selectedLang, setSelectedLang] = useState("en");
 
-  const upload = async () => {
-    if (!file) return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
 
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await axios.post(
-      "https://lenscribe-api.onrender.com/predict?lang=" + selectedLang,
-      formData
-    );
+    if (selectedFile) {
+      setPreview(URL.createObjectURL(selectedFile));
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!file) {
+      alert("Please upload an image first");
+      return;
+    }
 
     setLoading(true);
+    setResult("");
 
     try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/predict",
-        formData
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_HF_TOKEN}`,
+          },
+          body: file, // IMPORTANT
+        }
       );
-      setResult(res.data);
+
+      const data = await response.json();
+      console.log("HF Response:", data);
+
+      if (Array.isArray(data)) {
+        setResult(data[0]?.generated_text || "No caption generated");
+      } else if (data.error) {
+        setResult("Error: " + data.error);
+      } else {
+        setResult("Unexpected response");
+      }
     } catch (error) {
       console.error(error);
+      setResult("Request failed");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4">
+    <div style={{ textAlign: "center", padding: "40px" }}>
+      <h1>🌐 LENSCRIBE</h1>
+      <p>AI Image Captioning using Hugging Face</p>
 
-      <h1 className="text-5xl font-bold mb-6">🌐 LENSCRIBE</h1>
-      <p className="mb-6 text-lg">AI Image Captioning System</p>
-      
+      {/* File Upload */}
+      <input type="file" accept="image/*" onChange={handleFileChange} />
 
-<div style={{ position: "relative", zIndex: 100 }}>
-  <select
-    value={selectedLang}
-    onChange={(e) => setSelectedLang(e.target.value)}
-    style={{
-      padding: "8px",
-      borderRadius: "5px"
-    }}
-  >
-    <option value="en">English</option>
-    <option value="hi">Hindi</option>
-    <option value="fr">French</option>
-    <option value="es">Spanish</option>
-    <option value="de">German</option>
-  </select>
-</div>
-
-      <input
-        type="file"
-        className="mb-4"
-        onChange={(e) => {
-          if (e.target.files) {
-            setFile(e.target.files[0]);
-            setPreview(URL.createObjectURL(e.target.files[0]));
-          }
-        }}
-      />
-
+      {/* Image Preview */}
       {preview && (
-        <img
-          src={preview}
-          alt="preview"
-          className="w-64 h-64 object-cover rounded-lg mb-4 shadow-lg"
-        />
+        <div style={{ marginTop: "20px" }}>
+          <img
+            src={preview}
+            alt="Preview"
+            style={{ maxWidth: "300px", borderRadius: "10px" }}
+          />
+        </div>
       )}
 
-      <button
-        onClick={upload}
-        className="px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200">
-        Generate Caption
-      </button>
+      {/* Button */}
+      <div style={{ marginTop: "20px" }}>
+        <button
+          onClick={handleGenerate}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+        >
+          Generate Caption
+        </button>
+      </div>
 
-      {loading && <p className="mt-4">⏳ Generating...</p>}
+      {/* Loading */}
+      {loading && <p>Generating caption... ⏳</p>}
 
+      {/* Result */}
       {result && (
-        <div className="mt-6 bg-white text-black p-6 rounded-lg shadow-lg w-80 text-center">
-    <p><b>English:</b> {result.caption_en}</p>
-    <p><b>Translated:</b> {result.caption}</p>
-  </div>
-)}
+        <div style={{ marginTop: "20px" }}>
+          <h3>Caption:</h3>
+          <p>{result}</p>
+        </div>
+      )}
     </div>
   );
 }
