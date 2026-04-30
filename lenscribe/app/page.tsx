@@ -28,12 +28,9 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base",
+        "/api/caption",
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_HF_TOKEN}`,
-          },
           body: file, // IMPORTANT
         }
       );
