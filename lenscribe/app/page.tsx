@@ -59,7 +59,7 @@ export default function Home() {
   return (
     <div style={{ textAlign: "center", padding: "40px" }}>
       <h1>🌐 LENSCRIBE</h1>
-      <p>AI Image Captioning using Hugging Face</p>
+      <p>AI Image Captioning</p>
 
       {/* File Upload */}
       <input type="file" accept="image/*" onChange={handleFileChange} />
