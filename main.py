@@ -32,11 +32,13 @@ device = "cpu"
 print("Loading BLIP model...")
 
 processor = BlipProcessor.from_pretrained(
-    "Salesforce/blip-image-captioning-small",
+    "Salesforce/blip-image-captioning-base",
+    local_files_only=False
 )
 
 model = BlipForConditionalGeneration.from_pretrained(
-    "Salesforce/blip-image-captioning-small",
+    "Salesforce/blip-image-captioning-base",
+    local_files_only=False
 ).to(device)
 
 print("Model loaded!")
