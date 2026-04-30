@@ -29,17 +29,17 @@ device = "cpu"
 # -----------------------------
 # LOAD LIGHT MODELS
 # -----------------------------
-print("Loading lightweight BLIP model...")
+print("Loading BLIP model...")
 
 processor = BlipProcessor.from_pretrained(
-    "Salesforce/blip-image-captioning-small"
+    "Salesforce/blip-image-captioning-small",
 )
 
 model = BlipForConditionalGeneration.from_pretrained(
-    "Salesforce/blip-image-captioning-small"
+    "Salesforce/blip-image-captioning-small",
 ).to(device)
 
-print("BLIP loaded!")
+print("Model loaded!")
 
 # Lightweight translator
 # translator = Translator()
