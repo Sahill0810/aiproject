@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const formData = new FormData();
     formData.append("file", blob, "image.jpg");
 
-    const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+    const BACKEND_URL = "https://sahil0810-aiprojectnew.hf.space";
 
     const res = await fetch(`${BACKEND_URL}/predict`, {
       method: "POST",
