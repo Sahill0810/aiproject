@@ -1,5 +1,7 @@
-fastapi
-uvicorn
-torch==2.0.1
+streamlit
+torch
 transformers==4.35.2
 pillow
+fastapi
+uvicorn
+python-multipart

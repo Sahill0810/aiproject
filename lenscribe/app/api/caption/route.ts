@@ -1,23 +1,27 @@
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
-    try {
-      const file = await req.arrayBuffer();
-  
-      const response = await fetch(
-        "https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.HF_TOKEN}`,
-            "Content-Type": "application/octet-stream",
-          },
-          body: file,
-        }
-      );
-  
-      const data = await response.json();
-  
-      return Response.json(data);
-    } catch (error) {
-      return Response.json({ error: "Failed to fetch" }, { status: 500 });
-    }
+  try {
+    const blob = await req.blob();
+
+    const formData = new FormData();
+    formData.append("file", blob, "image.jpg");
+
+    const res = await fetch("http://localhost:8000/predict", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    return Response.json({ caption: data.caption_en });
+  } catch (err: any) {
+    console.error(err);
+    return Response.json(
+      { error: err.message ?? "Server error" },
+      { status: 500 }
+    );
   }
+}

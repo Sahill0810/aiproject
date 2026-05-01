@@ -89,7 +89,7 @@ def predict(file: UploadFile = File(...), lang: str = "en"):
 
         return {
             "caption_en": caption_en,
-            "caption": caption_translated,
+            "caption": caption_en,
             "language": lang
         }
 
